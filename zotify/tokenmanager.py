@@ -7,8 +7,11 @@ SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
 class SpotifyTokenManager:
     def __init__(self):
-        self.client_id = Zotify.CONFIG.get_spotify_client_id()
-        self.client_secret = Zotify.CONFIG.get_spotify_client_secret()
+        self.client_id = Zotify.CONFIG.get_client_id().strip()
+        self.client_secret = Zotify.CONFIG.get_client_secret().strip()
+        if not self.client_id or not self.client_secret:
+            raise ValueError("Spotify API Client ID and Secret must be set in config.json for metadata features (e.g., genres, lyrics). "
+                             "Create a Spotify app at https://developer.spotify.com/dashboard/applications to get them.")
         self.access_token = None
         self.expires_at = 0
 
