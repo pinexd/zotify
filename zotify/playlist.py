@@ -2,6 +2,7 @@ from zotify.const import ITEMS, ID, TRACK, NAME
 from zotify.termoutput import Printer
 from zotify.track import download_track
 from zotify.utils import split_input
+from zotify.termoutput import Printer, PrintChannel
 from zotify.zotify import Zotify
 import time
 
