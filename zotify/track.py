@@ -46,37 +46,70 @@ def get_followed_artists() -> list:
     return artists
 
 
-def get_song_info(song_id) -> Tuple[List[str], List[Any], str, str, Any, Any, Any, Any, Any, Any, int]:
-    """ Retrieves metadata for downloaded songs """
-    with Loader(PrintChannel.PROGRESS_INFO, "Fetching track information..."):
-        (raw, info) = Zotify.invoke_url(f'{TRACKS_URL}?ids={song_id}&market=from_token')
+from zotify.tokenmanager import SpotifyTokenManager
 
-    if not TRACKS in info:
-        raise ValueError(f'Invalid response from TRACKS_URL:\n{raw}')
+token_manager = SpotifyTokenManager(
+    client_id="",
+    client_secret=""
+)
+
+def get_song_info(song_id) -> Tuple[List[str], List[Any], str, str, Any, Any, Any, Any, Any, Any, int]:
+    """ Retrieves metadata for downloaded songs using own Spotify API credentials """
+
+    with Loader(PrintChannel.PROGRESS_INFO, "Fetching track information..."):
+        token = token_manager.get_token()
+
+        response = requests.get(
+            f"https://api.spotify.com/v1/tracks",
+            params={"ids": song_id, "market": "US"},
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+
+    if response.status_code == 429:
+        raise RuntimeError("Spotify API rate limit exceeded (your app)")
+
+    response.raise_for_status()
+    info = response.json()
+
+    if TRACKS not in info:
+        raise ValueError(f'Invalid response from TRACKS_URL:\n{info}')
 
     try:
-        artists = []
-        for data in info[TRACKS][0][ARTISTS]:
-            artists.append(data[NAME])
+        track = info[TRACKS][0]
 
-        album_name = info[TRACKS][0][ALBUM][NAME]
-        name = info[TRACKS][0][NAME]
-        release_year = info[TRACKS][0][ALBUM][RELEASE_DATE].split('-')[0]
-        disc_number = info[TRACKS][0][DISC_NUMBER]
-        track_number = info[TRACKS][0][TRACK_NUMBER]
-        scraped_song_id = info[TRACKS][0][ID]
-        is_playable = info[TRACKS][0][IS_PLAYABLE]
-        duration_ms = info[TRACKS][0][DURATION_MS]
+        artists = [a[NAME] for a in track[ARTISTS]]
+        album = track[ALBUM]
 
-        image = info[TRACKS][0][ALBUM][IMAGES][0]
-        for i in info[TRACKS][0][ALBUM][IMAGES]:
-            if i[WIDTH] > image[WIDTH]:
-                image = i
+        album_name = album[NAME]
+        name = track[NAME]
+        release_year = album[RELEASE_DATE].split('-')[0]
+        disc_number = track[DISC_NUMBER]
+        track_number = track[TRACK_NUMBER]
+        scraped_song_id = track[ID]
+        is_playable = track[IS_PLAYABLE]
+        duration_ms = track[DURATION_MS]
+
+        image = max(album[IMAGES], key=lambda i: i[WIDTH])
         image_url = image[URL]
 
-        return artists, info[TRACKS][0][ARTISTS], album_name, name, image_url, release_year, disc_number, track_number, scraped_song_id, is_playable, duration_ms
+        return (
+            artists,
+            track[ARTISTS],
+            album_name,
+            name,
+            image_url,
+            release_year,
+            disc_number,
+            track_number,
+            scraped_song_id,
+            is_playable,
+            duration_ms,
+        )
+
     except Exception as e:
-        raise ValueError(f'Failed to parse TRACKS_URL response: {str(e)}\n{raw}')
+        raise ValueError(f'Failed to parse TRACKS_URL response: {str(e)}\n{info}')
 
 
 def get_song_genres(rawartists: List[str], track_name: str) -> List[str]:
