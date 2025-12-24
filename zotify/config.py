@@ -20,6 +20,8 @@ TRANSCODE_BITRATE = 'TRANSCODE_BITRATE'
 SONG_ARCHIVE = 'SONG_ARCHIVE'
 SAVE_CREDENTIALS = 'SAVE_CREDENTIALS'
 CREDENTIALS_LOCATION = 'CREDENTIALS_LOCATION'
+SPOTIFY_CLIENT_ID = 'SPOTIFY_CLIENT_ID'
+SPOTIFY_CLIENT_SECRET = 'SPOTIFY_CLIENT_SECRET'
 OUTPUT = 'OUTPUT'
 PRINT_SPLASH = 'PRINT_SPLASH'
 PRINT_SKIPS = 'PRINT_SKIPS'
@@ -40,6 +42,8 @@ DOWNLOAD_LYRICS = 'DOWNLOAD_LYRICS'
 CONFIG_VALUES = {
     SAVE_CREDENTIALS:           { 'default': 'True',  'type': bool, 'arg': '--save-credentials'           },
     CREDENTIALS_LOCATION:       { 'default': '',      'type': str,  'arg': '--credentials-location'       },
+    SPOTIFY_CLIENT_ID:          { 'default': '',      'type': str,  'arg': '--spotify-client-id'          },
+    SPOTIFY_CLIENT_SECRET:      { 'default': '',      'type': str,  'arg': '--spotify-client-secret'      },
     OUTPUT:                     { 'default': '',      'type': str,  'arg': '--output'                     },
     SONG_ARCHIVE:               { 'default': '',      'type': str,  'arg': '--song-archive'               },
     ROOT_PATH:                  { 'default': '',      'type': str,  'arg': '--root-path'                  },
@@ -237,6 +241,20 @@ class Config:
     @classmethod
     def get_save_credentials(cls) -> bool:
         return cls.get(SAVE_CREDENTIALS)
+
+    @classmethod
+    def get_spotify_client_id(cls) -> str:
+        value = cls.get(SPOTIFY_CLIENT_ID)
+        if not value:
+            raise ValueError("Spotify Client ID is not configured. Set it in config.json or via --spotify-client-id")
+        return value
+
+    @classmethod
+    def get_spotify_client_secret(cls) -> str:
+        value = cls.get(SPOTIFY_CLIENT_SECRET)
+        if not value:
+            raise ValueError("Spotify Client Secret is not configured. Set it in config.json or via --spotify-client-secret")
+        return value
 
     @classmethod
     def get_credentials_location(cls) -> str:
