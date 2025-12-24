@@ -9,15 +9,16 @@ class SpotifyTokenManager:
     def __init__(self):
         self.client_id = Zotify.CONFIG.get_spotify_client_id().strip()
         self.client_secret = Zotify.CONFIG.get_spotify_client_secret().strip()
-        if not self.client_id or not self.client_secret:
-            raise ValueError("Spotify API Client ID and Secret must be set in config.json for metadata features (e.g., genres, lyrics). "
-                             "Create a Spotify app at https://developer.spotify.com/dashboard/applications to get them.")
         self.access_token = None
         self.expires_at = 0
 
     def get_token(self):
         if self.access_token and time.time() < self.expires_at:
             return self.access_token
+
+        if not self.client_id or not self.client_secret:
+            raise ValueError("Spotify Client ID and Secret must be set in config.json or via --spotify-client-id and --spotify-client-secret for metadata features (e.g., genres). "
+                             "Create a Spotify app at https://developer.spotify.com/dashboard/applications to get them.")
 
         auth_header = base64.b64encode(
             f"{self.client_id}:{self.client_secret}".encode()
