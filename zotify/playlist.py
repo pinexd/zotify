@@ -29,14 +29,14 @@ def get_playlist_songs(playlist_id):
     songs = []
     offset = 0
     limit = 100
-
     while True:
         resp = Zotify.invoke_url_with_params(f'{PLAYLISTS_URL}/{playlist_id}/tracks', limit=limit, offset=offset)
+        if 'error' in resp:
+            raise ValueError(f"Spotify API error: {resp['error'].get('message', 'Unknown error')} (status: {resp['error'].get('status', 'N/A')})")
         offset += limit
         songs.extend(resp[ITEMS])
         if len(resp[ITEMS]) < limit:
             break
-
     return songs
 
 
