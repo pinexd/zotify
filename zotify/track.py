@@ -48,14 +48,11 @@ def get_followed_artists() -> list:
 
 from zotify.tokenmanager import SpotifyTokenManager
 
-token_manager = SpotifyTokenManager()
-
 def get_song_info(song_id) -> Tuple[List[str], List[Any], str, str, Any, Any, Any, Any, Any, Any, int]:
     """ Retrieves metadata for downloaded songs using own Spotify API credentials """
-
+    token_manager = SpotifyTokenManager()  # Instantiate here, after Config.load has run
     with Loader(PrintChannel.PROGRESS_INFO, "Fetching track information..."):
         token = token_manager.get_token()
-
         response = requests.get(
             f"https://api.spotify.com/v1/tracks",
             params={"ids": song_id, "market": "US"},
@@ -63,6 +60,7 @@ def get_song_info(song_id) -> Tuple[List[str], List[Any], str, str, Any, Any, An
                 "Authorization": f"Bearer {token}"
             }
         )
+
 
     if response.status_code == 429:
         raise RuntimeError("Spotify API rate limit exceeded (your app)")
