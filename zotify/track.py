@@ -48,10 +48,7 @@ def get_followed_artists() -> list:
 
 from zotify.tokenmanager import SpotifyTokenManager
 
-token_manager = SpotifyTokenManager(
-    client_id="",
-    client_secret=""
-)
+token_manager = SpotifyTokenManager()
 
 def get_song_info(song_id) -> Tuple[List[str], List[Any], str, str, Any, Any, Any, Any, Any, Any, int]:
     """ Retrieves metadata for downloaded songs using own Spotify API credentials """
