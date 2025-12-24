@@ -7,8 +7,8 @@ SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 
 class SpotifyTokenManager:
     def __init__(self):
-        self.client_id = Zotify.CONFIG.get_client_id()
-        self.client_secret = Zotify.CONFIG.get_client_secret()
+        self.client_id = Zotify.CONFIG.get_spotify_client_id()
+        self.client_secret = Zotify.CONFIG.get_spotify_client_secret()
         self.access_token = None
         self.expires_at = 0
 
