@@ -3,6 +3,7 @@ from zotify.termoutput import Printer
 from zotify.track import download_track
 from zotify.utils import split_input
 from zotify.zotify import Zotify
+import time
 
 MY_PLAYLISTS_URL = 'https://api.spotify.com/v1/me/playlists'
 PLAYLISTS_URL = 'https://api.spotify.com/v1/playlists'
@@ -30,13 +31,24 @@ def get_playlist_songs(playlist_id):
     offset = 0
     limit = 100
     while True:
-        resp = Zotify.invoke_url_with_params(f'{PLAYLISTS_URL}/{playlist_id}/tracks', limit=limit, offset=offset)
+        resp = Zotify.invoke_url_with_params(
+            f'{PLAYLISTS_URL}/{playlist_id}/tracks',
+            limit=limit,
+            offset=offset,
+            market='from_token'  # Optional: helps with track availability
+        )
         if 'error' in resp:
+            if resp['error'].get('status') == 429:
+                retry_after = int(resp['error'].get('headers', {}).get('Retry-After', 5))  # Fallback to 5s if missing
+                Printer.print(PrintChannel.WARNINGS, f"Rate limit hit (429). Waiting {retry_after} seconds...")
+                time.sleep(retry_after + 1)  # Add 1s buffer
+                continue  # Retry the same page
             raise ValueError(f"Spotify API error: {resp['error'].get('message', 'Unknown error')} (status: {resp['error'].get('status', 'N/A')})")
-        offset += limit
         songs.extend(resp[ITEMS])
         if len(resp[ITEMS]) < limit:
             break
+        offset += limit
+        time.sleep(2)
     return songs
 
 
